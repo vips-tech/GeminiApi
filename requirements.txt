@@ -1,0 +1,5 @@
+flask
+pillow
+google-genai
+pyttsx3
+gunicorn
