@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Replace with your Gemini API key
 client = genai.Client(
-    api_key="AIzaSyAJzSikEZD6rdA-HTBUOU55sG7FLCmP5bY"
+    api_key="AIzaSyAASQfVIUoxDzWvYmeYkKLOLn2nwdFCKN8"
 )
 
 UPLOAD_FOLDER = "uploads"
