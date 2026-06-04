@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from PIL import Image
 from google import genai
 import os
+import json
+import re
 
 app = Flask(__name__)
 
@@ -19,35 +21,31 @@ def analyze_plant_disease(image_path):
     img = Image.open(image_path)
 
     prompt = """
-You are an expert plant pathologist.
+You are an expert plant pathologist. Analyze the plant disease in this image.
 
-Analyze the plant image and provide ONLY the following essential information in a concise format:
+Provide a response in EXACTLY this JSON format (no markdown, no extra text):
 
-1. Disease Name (scientific and common name)
-2. How It Occurs (brief explanation of causes and favorable conditions)
-3. How to Solve (2-3 key treatment methods)
-4. Precautions (2-3 important prevention measures)
+{
+  "disease_name": "Common name (Scientific name)",
+  "how_it_occurs": [
+    "cause/condition 1",
+    "cause/condition 2",
+    "cause/condition 3"
+  ],
+  "treatment": [
+    "treatment method 1",
+    "treatment method 2",
+    "treatment method 3"
+  ],
+  "precautions": [
+    "prevention tip 1",
+    "prevention tip 2",
+    "prevention tip 3"
+  ]
+}
 
-Keep each section brief and to the point. Use bullet points for clarity.
-Avoid lengthy descriptions - focus only on actionable information.
-
-Format your response as:
-
-Disease Name: [name]
-
-How It Occurs:
-- [cause 1]
-- [cause 2]
-
-How to Solve:
-- [treatment 1]
-- [treatment 2]
-
-Precautions:
-- [prevention 1]
-- [prevention 2]
-
-If the plant appears healthy, simply state "No disease detected."
+Keep each point concise (max 10-15 words). Focus on actionable information only.
+If no disease is detected, return: {"disease_name": "No disease detected", "how_it_occurs": [], "treatment": [], "precautions": []}
 """
 
     response = client.models.generate_content(
@@ -91,11 +89,26 @@ def analyze():
         file.save(filepath)
 
         result = analyze_plant_disease(filepath)
-
-        return jsonify({
-            "status": "success",
-            "analysis": result
-        })
+        
+        # Try to parse the JSON response from Gemini
+        try:
+            # Remove markdown code blocks if present
+            cleaned_result = re.sub(r'```json\s*|\s*```', '', result).strip()
+            analysis_data = json.loads(cleaned_result)
+            
+            return jsonify({
+                "status": "success",
+                "disease_name": analysis_data.get("disease_name", "Unknown"),
+                "how_it_occurs": analysis_data.get("how_it_occurs", []),
+                "treatment": analysis_data.get("treatment", []),
+                "precautions": analysis_data.get("precautions", [])
+            })
+        except json.JSONDecodeError:
+            # If JSON parsing fails, return the raw text
+            return jsonify({
+                "status": "success",
+                "analysis": result
+            })
 
     except Exception as e:
 
