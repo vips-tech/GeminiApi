@@ -21,27 +21,33 @@ def analyze_plant_disease(image_path):
     prompt = """
 You are an expert plant pathologist.
 
-Analyze the plant image and provide:
+Analyze the plant image and provide ONLY the following essential information in a concise format:
 
-1. Plant Species
-2. Disease Detected
-3. Severity Level
-4. Symptoms Observed
-5. Possible Causes
-6. Treatment Recommendations
-7. Prevention Tips
+1. Disease Name (scientific and common name)
+2. How It Occurs (brief explanation of causes and favorable conditions)
+3. How to Solve (2-3 key treatment methods)
+4. Precautions (2-3 important prevention measures)
 
-Format:
+Keep each section brief and to the point. Use bullet points for clarity.
+Avoid lengthy descriptions - focus only on actionable information.
 
-Plant Species:
-Disease Detected:
-Severity Level:
-Symptoms Observed:
-Possible Causes:
-Treatment Recommendations:
-Prevention Tips:
+Format your response as:
 
-If the plant appears healthy, clearly mention that no disease is detected.
+Disease Name: [name]
+
+How It Occurs:
+- [cause 1]
+- [cause 2]
+
+How to Solve:
+- [treatment 1]
+- [treatment 2]
+
+Precautions:
+- [prevention 1]
+- [prevention 2]
+
+If the plant appears healthy, simply state "No disease detected."
 """
 
     response = client.models.generate_content(
